@@ -14,6 +14,7 @@ library(httr)
 
 ```
 
+## Reading tables from the web
 
 ```{r }
 
@@ -22,10 +23,28 @@ drug_use_html = read_html(url)
 
 drug_use_html
 
+drug_use_html |>
+  html_table()
+```
+
+```{r}
+
+table_marj = 
+  drug_use_html |> 
+  html_table() |> 
+  first() |>
+  slice(-1)
+
 ```
 
 
-
 ```{r}
+
+cost_of_living = 
+  read_html("https://www.bestplaces.net/cost_of_living/city/new_york/new_york") %>% 
+  html_table(header=TRUE) %>% 
+  first()
+
+
 ```
 
