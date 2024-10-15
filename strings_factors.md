@@ -474,3 +474,126 @@ as.numeric(sex_vec)
 ```
 
     ## [1] 1 1 2 1
+
+NSDOH
+
+``` r
+nsduh_url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+
+table_marj = 
+  read_html(nsduh_url) |> 
+  html_table() |> 
+  first() |>
+  slice(-1) %>% 
+  select(-contains("P value")) %>% 
+  pivot_longer(
+    cols = -State,
+    names_to = "age_year",
+    values_to = "percent"
+  ) %>% 
+  separate(age_year, into = c("age", "year"), sep = "\\(") %>% 
+  mutate(
+    year = str_replace(year, "\\)", ""),
+    percent = str_remove(percent, "[a-c]$"),
+    percent = as.numeric(percent)
+  )
+```
+
+``` r
+table_marj %>% 
+  filter(age == "12-17") %>% 
+  mutate(
+    State = fct_reorder(State, percent) # first is categorical variable, second is numerical
+  ) %>% 
+  ggplot(
+    aes(x = State, y = percent, color = year)
+  ) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+![](strings_factors_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+``` r
+data("rest_inspec")
+
+rest_inspec %>% 
+  count(boro, grade) %>% 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+```
+
+    ## # A tibble: 6 × 8
+    ##   boro              A     B     C `Not Yet Graded`     P     Z  `NA`
+    ##   <chr>         <int> <int> <int>            <int> <int> <int> <int>
+    ## 1 BRONX         13688  2801   701              200   163   351 16833
+    ## 2 BROOKLYN      37449  6651  1684              702   416   977 51930
+    ## 3 MANHATTAN     61608 10532  2689              765   508  1237 80615
+    ## 4 Missing           4    NA    NA               NA    NA    NA    13
+    ## 5 QUEENS        35952  6492  1593              604   331   913 45816
+    ## 6 STATEN ISLAND  5215   933   207               85    47   149  6730
+
+``` r
+rest_inspec = 
+  rest_inspec %>% 
+  filter(
+    str_detect(grade, "[A-C]"),
+    !(boro == "Missing")
+  )
+```
+
+``` r
+rest_inspec %>% 
+  mutate(
+    dba = str_to_sentence(dba)
+  ) %>% 
+  filter(
+    str_detect(cuisine_description, "Pizza")
+  ) %>% 
+  mutate(
+    #boro = fct_infreq(boro) # order in terms of frequency
+    boro = fct_relevel(boro, "STATEN ISLAND")
+  ) %>% 
+  ggplot(aes(x = boro)) +
+  geom_bar()
+```
+
+![](strings_factors_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+``` r
+rest_inspec %>% 
+  mutate(
+    dba = str_to_sentence(dba)
+  ) %>% 
+  filter(
+    str_detect(cuisine_description, "Pizza")
+  ) %>% 
+  mutate(
+    boro = fct_infreq(boro), # order in terms of frequency
+    boro = str_replace(boro, "MANHATTAN", "THE CITY") #makes boro a character variable
+  ) %>% 
+  ggplot(aes(x = boro)) +
+  geom_bar()
+```
+
+![](strings_factors_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+``` r
+rest_inspec %>% 
+  mutate(
+    dba = str_to_sentence(dba)
+  ) %>% 
+  filter(
+    str_detect(cuisine_description, "Pizza")
+  ) %>% 
+  mutate(
+    boro = fct_infreq(boro), # order in terms of frequency
+    boro = fct_recode(boro, "THE CITY" = "MANHATTAN")
+  ) %>% 
+  ggplot(aes(x = boro)) +
+  geom_bar()
+```
+
+![](strings_factors_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
