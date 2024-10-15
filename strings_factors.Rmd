@@ -1,0 +1,156 @@
+---
+title: "data_wrangling_ii"
+author: "Rebecca Shyu"
+date: "2024-10-10"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(rvest)
+library(httr)
+
+```
+
+## Reading tables from the web
+
+```{r }
+
+url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+drug_use_html = read_html(url)
+
+drug_use_html
+
+drug_use_html |>
+  html_table()
+```
+
+```{r}
+
+table_marj = 
+  drug_use_html |> 
+  html_table() |> 
+  first() |>
+  slice(-1)
+
+```
+
+## CSS Selectors
+Star Wars 
+
+selector gadget
+
+```{r}
+swm_html = 
+  read_html("https://www.imdb.com/list/ls070150896/") 
+
+swm_title_vec = 
+  swm_html %>% 
+    html_elements(".ipc-title-link-wrapper .ipc-title__text") %>% 
+    html_text()
+
+swm_runtime_vec =  
+  swm_html %>% 
+    html_elements(".dli-title-metadata-item:nth-child(2)") %>% 
+    html_text()
+
+swm_score_vec = 
+  swm_html %>% 
+  html_elements(".metacritic-score-box") %>% 
+  html_text()
+
+```
+
+```{r}
+books_html = read_html("https://books.toscrape.com/")
+
+books_html %>% 
+  html_elements(".price_color") %>% 
+  html_text()
+```
+
+## Strings
+
+```{r}
+
+string_vec = c("my", "name", "is", "rebecca")
+str_detect(string_vec, "rebecca") # need precise matches
+
+str_replace(string_vec, "rebecca", "reb")
+
+str_replace(string_vec, "e", "E")
+
+```
+
+
+```{r}
+
+string_vec = c(
+  "i think we all rule for participating",
+  "i think i have been caught",
+  "i think this will be quite fun actually",
+  "it will be fun, i think"
+  )
+
+str_detect(string_vec, "^i think")
+str_detect(string_vec, "i think$")
+```
+
+```{r}
+string_vec = c(
+  "Time for a Pumpkin Spice Latte!",
+  "went to the #pumpkinpatch last weekend",
+  "Pumpkin Pie is obviously the best pie",
+  "SMASHING PUMPKINS -- LIVE IN CONCERT!!"
+  )
+
+str_detect(string_vec,"[Pp]umpkin")
+```
+
+```{r}
+string_vec = c(
+  '7th inning stretch',
+  '1st half soon to begin. Texas won the toss.',
+  'she is 5 feet 4 inches tall',
+  '3AM - cant sleep :('
+  )
+
+str_detect(string_vec, "^[0-9][a-zA-Z]")
+```
+
+```{r}
+string_vec = c(
+  'Its 7:11 in the evening',
+  'want to go to 7-11?',
+  'my flight is AA711',
+  'NetBios: scanning ip 203.167.114.66'
+  )
+
+str_detect(string_vec, "7.11")
+```
+
+```{r}
+string_vec = c(
+  'The CI is [2, 5]',
+  ':-]',
+  ':-[',
+  'I found the answer on pages [6-7]'
+  )
+
+str_detect(string_vec, "\\[") #looking for this special character, need 2 slashes
+```
+
+## Factors
+```{r}
+
+sex_vec = factor(c("male", "male", "female", "male"))
+as.numeric(sex_vec)
+
+sex_vec = fct_relevel(sex_vec, "male")
+sex_vec
+as.numeric(sex_vec)
+
+```
+
